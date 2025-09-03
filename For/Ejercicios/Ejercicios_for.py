@@ -100,12 +100,11 @@ for i in range (2, numero):
         break
 '''
 
-'''
+
 # 11. Ingresar un número. Mostrar cada número primo que hay entre el 1 y el número ingresado. Informar cuántos números primos se encontraron.
 
-numero = int(input("Ingrese un número: "))
 contador_primos = 0
-
+numero = int(input("Ingrese un número: "))
 for i in range (2, numero + 1):
     es_primo = True
     for j in range (2, i):
@@ -115,5 +114,5 @@ for i in range (2, numero + 1):
     if es_primo:
         print(i)
         contador_primos += 1
-'''
+print(f"Cantidad de números primos encontrados: {contador_primos}")
 
