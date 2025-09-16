@@ -1,0 +1,221 @@
+# Git & GitHub
+
+## 🔹 1. Diferencia entre Git y GitHub
+
+- **Git** → es un sistema de control de versiones local. Permite guardar el historial de cambios en tu código y moverte entre versiones.
+- **GitHub** → es una plataforma en la nube que aloja repositorios Git, y permite trabajar de forma colaborativa, compartir tu código y gestionar proyectos.
+
+Piensa en **Git** como el motor, y en **GitHub** como el lugar donde guardas y compartes el trabajo.
+
+---
+
+## 🔹 2. Flujo básico de trabajo con Git
+
+1. **Escribes o modificas código** en tus archivos.
+2. **Git detecta los cambios** (archivos modificados, agregados o eliminados).
+3. Guardas esos cambios en un **commit** (un “paquete” de cambios con un mensaje descriptivo).
+4. Opcional: subes esos commits a **GitHub** para compartirlos o respaldarlos.
+
+---
+
+## 🔹 3. Comandos más utilizados en Git
+
+📌 **Configuración inicial (solo la primera vez en tu máquina)**
+
+```bash
+git config --global user.name "Tu Nombre"
+git config --global user.email "tuemail@example.com"
+```
+
+📌 **Inicializar un repositorio Git**
+
+```bash
+git init
+```
+
+📌 **Ver estado de los cambios**
+
+```bash
+git status
+```
+
+📌 **Agregar archivos al área de preparación (staging)**
+
+```bash
+git add archivo.txt      # agrega un archivo específico
+git add .                # agrega todos los cambios
+```
+
+📌 **Crear un commit (guardar cambios en el historial)**
+
+```bash
+git commit -m "Mensaje descriptivo de los cambios"
+```
+
+📌 **Ver historial de commits**
+
+```bash
+git log --oneline
+```
+
+📌 **Conectar con un repositorio remoto (GitHub)**
+
+```bash
+git remote add origin https://github.com/usuario/nombre-repo.git
+```
+
+📌 **Subir cambios al remoto**
+
+```bash
+git push -u origin main   # primera vez (main es la rama principal)
+git push                  # siguientes veces
+```
+
+📌 **Bajar cambios del remoto**
+
+```bash
+git pull origin main
+```
+
+---
+
+## 🔹 4. Crear un proyecto nuevo y subirlo a GitHub
+
+1. **En tu PC:**
+
+```bash
+mkdir MiProyecto
+cd MiProyecto
+git init
+```
+
+1. **Crea algún archivo**, por ejemplo:
+
+```bash
+echo "# Mi Proyecto" > README.md
+```
+
+1. **Agrega y confirma los cambios:**
+
+```bash
+git add .
+git commit -m "Primer commit: estructura inicial"
+```
+
+1. **En GitHub:**
+    - Crea un nuevo repositorio desde la web (sin README para evitar conflictos).
+    - Copia la URL (ej: `https://github.com/tuusuario/MiProyecto.git`).
+2. **Conéctalo con tu proyecto local:**
+
+```bash
+git remote add origin https://github.com/tuusuario/MiProyecto.git
+```
+
+1. **Sube los cambios:**
+
+```bash
+git branch -M main
+git push -u origin main
+```
+
+✅ ¡Listo! Tu proyecto ya está en GitHub 🎉
+
+---
+
+## 🔹 5. Flujo habitual después de inicializar
+
+Cada vez que trabajes:
+
+```bash
+git status                   # ver qué cambió
+git add .                    # preparar cambios
+git commit -m "Descripción"  # guardar cambios
+git push                     # subir a GitHub
+```
+
+---
+
+---
+
+## 🔹 1. Inicializar un proyecto y subirlo por primera vez a GitHub
+
+```bash
+# 1. Crear carpeta y entrar en ella
+mkdir MiProyecto
+cd MiProyecto
+
+# 2. Inicializar git
+git init
+
+# 3. Crear archivos (ej: README.md)
+echo "# Mi Proyecto" > README.md
+
+# 4. Revisar estado
+git status
+
+# 5. Agregar cambios
+git add .
+
+# 6. Hacer primer commit
+git commit -m "Primer commit: estructura inicial"
+
+# 7. Conectar con GitHub (URL del repo que creaste en GitHub)
+git remote add origin https://github.com/usuario/nombre-repo.git
+
+# 8. Nombrar la rama principal como main (solo una vez)
+git branch -M main
+
+# 9. Subir los cambios
+git push -u origin main
+```
+
+---
+
+## 🔹 2. Flujo de trabajo diario (ya existe el repo en GitHub)
+
+Cada vez que hagas cambios:
+
+```bash
+git status                   # Ver qué cambió
+git add .                    # Agregar todos los cambios
+git commit -m "Descripción"  # Guardar en el historial local
+git push                     # Subir a GitHub
+```
+
+---
+
+## 🔹 3. Descargar cambios de GitHub (colaboración o backup)
+
+```bash
+git pull origin main
+```
+
+---
+
+## 🔹 4. Orden más usado en la práctica
+
+1. `git status`
+
+[Git Status](https://www.notion.so/Git-Status-269641c5aeb780e6bff2ec8f68997dfb?pvs=21)
+
+1. `git add .`
+
+[Git Add](https://www.notion.so/Git-Add-269641c5aeb7808c89d6d2530b75284e?pvs=21)
+
+1. `git commit -m "Mensaje"` 
+
+[Git Commits](https://www.notion.so/Git-Commits-269641c5aeb780e0bc02debf002833f3?pvs=21)
+
+1. `git push`
+
+[Git Push](https://www.notion.so/Git-Push-269641c5aeb780a9ba32c5e20966e84c?pvs=21)
+
+1. `git pull`
+
+[Git Pull](https://www.notion.so/Git-Pull-269641c5aeb78005a307cef5f8639549?pvs=21)
+
+---
+
+---
+
+[Areas de trabajo en Git](https://www.notion.so/Areas-de-trabajo-en-Git-269641c5aeb7804c9945c84242885ac2?pvs=21)
