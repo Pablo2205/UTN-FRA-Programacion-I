@@ -12,7 +12,3 @@ mi_lista = []
 def crear_array(cantidad):
     mi_lista = [0] * cantidad
     return mi_lista
-
-
-
-
