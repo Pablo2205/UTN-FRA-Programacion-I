@@ -11,4 +11,3 @@ def producto_lista(mi_lista):
     return producto
 
 print(producto_lista(mi_lista))
-

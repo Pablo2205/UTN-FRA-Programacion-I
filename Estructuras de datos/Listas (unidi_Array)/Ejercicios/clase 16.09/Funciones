@@ -1,0 +1,5 @@
+def carga_secuencial(lista: list):
+    for i in range(len(lista)):
+        dato = int(input("ingrese un numero: "))
+        lista[i] = dato
+        
