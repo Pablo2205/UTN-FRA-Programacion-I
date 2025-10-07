@@ -57,13 +57,24 @@ while True:
             if cargado == True:
                 orden = input("Ingrese orden (ASC o DESC): ")
                 if orden == "ASC" or orden == "DESC":
-                    matriz_o, nombres_o, generos_o, legajos_o, promedios_o = \
-                        ordenar_por_promedio(matriz, nombres, generos, legajos, promedios, orden)
+                    
+                    # Llamo a la función que devuelve una matriz con todo ordenado
+                    resultado = ordenar_por_promedio(matriz, nombres, generos, legajos, promedios, orden)
+                    
+                    # Extraigo cada lista desde la matriz resultado
+                    matriz_o = resultado[0]
+                    nombres_o = resultado[1]
+                    generos_o = resultado[2]
+                    legajos_o = resultado[3]
+                    promedios_o = resultado[4]
+                    
+                    # Muestro los datos ordenados
                     mostrar_ordenados(matriz_o, nombres_o, generos_o, legajos_o, promedios_o)
+                
                 else:
                     print("Orden inválido.")
             else:
-                print("Debe cargar los datos primero (opcion 1).")
+                print("Debe cargar los datos primero (opción 1).")
 
         case "5":
             if cargado == True:
@@ -90,15 +101,21 @@ while True:
 
         case "7":
             if cargado == True:
-                materia = int(input("Ingrese índice de materia (0-4): "))
-                if materia >= 0 and materia < NUM_MATERIAS:
-                    conteo = contar_notas_por_materia(matriz, materia)
-                    for i in range(10):
-                        print("Nota", i + 1, ":", conteo[i])
-                else:
-                    print("Índice fuera de rango.")
+                print("Mostrando las mejores materias:")
+                resultado = mejores_materias(matriz)
+                indices = resultado[0]
+                promedios = resultado[1]
+
+                # Mostrar resultados
+                print("Promedios de cada materia:")
+                for i in range(len(promedios)):
+                    print(f"Materia {i}: {promedios[i]:.2f}")
+
+                print("\nMejores materias (mayor promedio):")
+                for i in range(len(indices)):
+                    print(f"Materia {indices[i]} con promedio {promedios[indices[i]]:.2f}")
             else:
-                print("Debe cargar los datos primero (opcion 1).")
+                print("Debe cargar los datos primero (opción 1).")
 
         case "8":
             print("Saliendo del programa.")

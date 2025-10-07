@@ -46,10 +46,12 @@ def mejores_materias(matriz_notas):
         matriz_notas (list[list[int]]): Matriz con las notas de todos los estudiantes.
 
     Returns:
-        List:
-            list[int]: Índices de las materias con mayor promedio.
-            list[float]: Promedios de todas las materias.
+        list: 
+            Contiene dos listas:
+                [0] -> índices de las materias con mayor promedio
+                [1] -> promedios de todas las materias
     """
+
     cantidad_materias = len(matriz_notas[0])
     lista_promedios_materias = [0] * cantidad_materias
 
@@ -59,9 +61,8 @@ def mejores_materias(matriz_notas):
         cantidad_estudiantes = len(matriz_notas)
 
         for i in range(cantidad_estudiantes):
-            suma_notas += matriz_notas[i][j]  # Sumo la nota de la materia j
+            suma_notas = suma_notas + matriz_notas[i][j]
 
-        # Calculo el promedio de la materia j
         promedio_materia = suma_notas / cantidad_estudiantes
         lista_promedios_materias[j] = promedio_materia
 
@@ -71,14 +72,22 @@ def mejores_materias(matriz_notas):
         if promedio > mayor_promedio:
             mayor_promedio = promedio
 
-    # Paso 3: Obtener los índices de las materias con ese promedio máximo
-    lista_indices_mejores = []
+    # Paso 3: Crear lista de índices de materias con ese promedio máximo SIN append
+    cantidad_mejores = 0
     for j in range(cantidad_materias):
         if lista_promedios_materias[j] == mayor_promedio:
-            lista_indices_mejores.append(j)
+            cantidad_mejores = cantidad_mejores + 1
 
-    # Devuelvo los índices y los promedios de todas las materias
-    return lista_indices_mejores, lista_promedios_materias
+    lista_indices_mejores = [0] * cantidad_mejores
+    indice_actual = 0
+    for j in range(cantidad_materias):
+        if lista_promedios_materias[j] == mayor_promedio:
+            lista_indices_mejores[indice_actual] = j
+            indice_actual = indice_actual + 1
+
+    # Devuelvo una sola lista con ambas listas adentro (no tupla)
+    return [lista_indices_mejores, lista_promedios_materias]
+
 
 
 # Cuenta cuántas veces se repite cada nota (1 a 10) en una materia específica
