@@ -79,13 +79,13 @@ def crear_datos_hardcodeados():
 
     generos_posibles = ['F', 'M', 'X']
 
-    # Inicializamos listas de tamaño fijo
+    # Inicializo listas de tamaño fijo
     matriz_notas = [[0 for materia in range(NUM_MATERIAS)] for estudiante in range(NUM_ESTUDIANTES)]
     lista_generos = [0] * NUM_ESTUDIANTES
     lista_legajos = [0] * NUM_ESTUDIANTES
     lista_estados = [1] * NUM_ESTUDIANTES  # Todos activos
 
-    # Asignamos los datos
+    # Asigno los datos
     for indice_estudiante in range(NUM_ESTUDIANTES):
         # Notas de cada materia
         for indice_materia in range(NUM_MATERIAS):
@@ -93,26 +93,9 @@ def crear_datos_hardcodeados():
 
         lista_generos[indice_estudiante] = generos_posibles[indice_estudiante % 3]
         lista_legajos[indice_estudiante] = 100000 + indice_estudiante
-        # print(matriz_notas)  # Lo hago para probar salida de matriz (ya se que está prohibido)
+        #print(matriz_notas)  # Lo hago para probar salida de matriz (ya se que está prohibido)
 
     return [matriz_notas, lista_nombres, lista_generos, lista_legajos]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 def crear_datos_manualmente():
     """
@@ -129,7 +112,7 @@ def crear_datos_manualmente():
 
     # Preguntar cuántos estudiantes se van a cargar
     cantidad_estudiantes = int(input("Ingrese la cantidad de estudiantes: "))
-    cantidad_materias = 5  # fija como en tu proyecto
+    cantidad_materias = 5 
 
     # Inicializar listas
     matriz_notas = [[0 for j in range(cantidad_materias)] for i in range(cantidad_estudiantes)]
@@ -140,15 +123,14 @@ def crear_datos_manualmente():
     # Ingreso de datos
     for i in range(cantidad_estudiantes):
         print("Ingresando datos del estudiante", i + 1)
-        lista_nombres[i] = input("  Nombre: ")
-        lista_generos[i] = input("  Género (F/M/X): ")
+        lista_nombres[i] = str(input("  Nombre: "))
+        lista_generos[i] = str(input("  Género (F/M/X): "))
         lista_legajos[i] = int(input("  Legajo: "))
 
         # Notas
         for j in range(cantidad_materias):
             matriz_notas[i][j] = int(input("    Nota de materia " + str(j + 1) + ": "))
 
-    # Todos activos
     lista_estados = [1] * cantidad_estudiantes
 
     return matriz_notas, lista_nombres, lista_generos, lista_legajos, lista_estados

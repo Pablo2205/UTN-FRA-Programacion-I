@@ -47,6 +47,7 @@ def ordenar_por_promedio(matriz, nombres, generos, legajos, promedios, orden):
                     generos[j], generos[j + 1] = generos[j + 1], generos[j]
                     legajos[j], legajos[j + 1] = legajos[j + 1], legajos[j]
 
-    # Devolver una sola matriz con todas las listas
+    # Devuelve una sola matriz con todas las listas
     matriz_total = [matriz, nombres, generos, legajos, promedios]
     return matriz_total
+

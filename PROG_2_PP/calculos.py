@@ -31,7 +31,7 @@ def calcular_promedios(matriz_notas):
     cantidad_estudiantes = len(matriz_notas)
     lista_promedios = [0] * cantidad_estudiantes
 
-    # Recorro todos los estudiantes (todos están activos)
+    # Recorro todos los estudiantes
     for i in range(cantidad_estudiantes):
         promedio_estudiante = calcular_promedio_estudiante(matriz_notas[i])
         lista_promedios[i] = promedio_estudiante
@@ -55,7 +55,7 @@ def mejores_materias(matriz_notas):
     cantidad_materias = len(matriz_notas[0])
     lista_promedios_materias = [0] * cantidad_materias
 
-    # Paso 1: Calcular el promedio general de cada materia
+    # Calculo el promedio general de cada materia
     for j in range(cantidad_materias):
         suma_notas = 0
         cantidad_estudiantes = len(matriz_notas)
@@ -66,13 +66,13 @@ def mejores_materias(matriz_notas):
         promedio_materia = suma_notas / cantidad_estudiantes
         lista_promedios_materias[j] = promedio_materia
 
-    # Paso 2: Buscar el valor máximo de los promedios
+    # Busco el valor máximo de los promedios
     mayor_promedio = lista_promedios_materias[0]
     for promedio in lista_promedios_materias:
         if promedio > mayor_promedio:
             mayor_promedio = promedio
 
-    # Paso 3: Crear lista de índices de materias con ese promedio máximo SIN append
+    # Creo la lista de índices de materias con ese promedio
     cantidad_mejores = 0
     for j in range(cantidad_materias):
         if lista_promedios_materias[j] == mayor_promedio:
@@ -85,12 +85,10 @@ def mejores_materias(matriz_notas):
             lista_indices_mejores[indice_actual] = j
             indice_actual = indice_actual + 1
 
-    # Devuelvo una sola lista con ambas listas adentro (no tupla)
     return [lista_indices_mejores, lista_promedios_materias]
 
 
-
-# Cuenta cuántas veces se repite cada nota (1 a 10) en una materia específica
+# Cuento cuántas veces se repite cada nota (1 a 10) en una materia específica
 def contar_notas_por_materia(matriz_notas, indice_materia):
     """Cuenta cuántas veces se repite cada nota en una materia.
 
