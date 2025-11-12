@@ -13,17 +13,15 @@ import pygame
 from pygame.locals import *
 import sys
 
-from modulos.configuracion import FPS
+from modulos.configuracion import *
 from modulos.logica import (inicializar_juego, seleccionar_celda, colocar_numero, 
-                             borrar_numero, reiniciar_juego)
+                             borrar_numero, reiniciar_juego, validar_y_calcular_puntaje)
 from modulos.validacion import validar_solucion
-from modulos.interfaz import (inicializar_pygame, dibujar_interfaz, crear_botones,
-                               obtener_celda_click, actualizar_hover_botones, 
-                               obtener_boton_clickeado, dibujar_menu_dificultad)
-from modulos.sonidos import (inicializar_sonidos, cargar_musica_fondo, cargar_efectos_sonido,
-                              reproducir_sonido)
+from modulos.interfaz import *
+from modulos.sonidos import *
+from modulos.usuarios import *
 
-#454545454545
+
 # -------------------- FUNCIÓN PRINCIPAL --------------------
 def main():
     """
@@ -31,10 +29,8 @@ def main():
     
     Operación:
         1. Inicializa Pygame y carga recursos
-        2. Entra en el bucle principal del juego
-        3. Maneja eventos del usuario (clicks, teclas)
-        4. Actualiza la pantalla constantemente
-        5. Controla el flujo entre menú y juego
+        2. Maneja estados del juego (menú, usuarios, jugando, etc.)
+        3. Procesa eventos y actualiza pantalla
     """
     # ===== INICIALIZACIÓN =====
     resultado_pygame = inicializar_pygame()
@@ -47,17 +43,22 @@ def main():
     cargar_musica_fondo()
     efectos_sonido = cargar_efectos_sonido()
     
-    # Variables de estado del juego
-    en_menu = True
-    estado = None
-    botones_menu = None
-    botones = crear_botones()
+    # ===== VARIABLES DE ESTADO =====
+    estado_juego = ESTADO_MENU
+    estado_sudoku = None
+    usuario_actual = ""
+    dificultad_seleccionada = "medio"
+    botones = []
     
-    # Variable para mensajes temporales
-    mensaje_temporal = {
-        'texto': '',
-        'tiempo': 0
-    }
+    # Para input de texto
+    texto_input = ""
+    input_activo = False
+    
+    # Para mensajes temporales
+    mensaje_temporal = {'texto': '', 'tiempo': 0}
+    
+    # Tiempo de inicio de partida
+    tiempo_inicio = 0
     
     # ===== BUCLE PRINCIPAL =====
     ejecutando = True
@@ -67,179 +68,274 @@ def main():
         for evento in pygame.event.get():
             
             # ----- Evento: Cerrar ventana -----
-            tipo_evento_es_quit = evento.type == QUIT
-            if tipo_evento_es_quit:
+            if evento.type == QUIT:
                 ejecutando = False
             
             # ----- Evento: Click del mouse -----
-            tipo_evento_es_click = evento.type == MOUSEBUTTONDOWN
-            if tipo_evento_es_click:
-                boton_izquierdo = evento.button == 1
-                
-                if boton_izquierdo:
+            elif evento.type == MOUSEBUTTONDOWN:
+                if evento.button == 1:
                     pos = pygame.mouse.get_pos()
+                    accion = obtener_boton_clickeado(botones, pos)
                     
-                    # --- Si estamos en el menú de dificultad ---
-                    if en_menu:
-                        menu_existe = botones_menu is None
+                    # ===== MENÚ PRINCIPAL =====
+                    if estado_juego == ESTADO_MENU:
+                        if accion == 'nivel':
+                            estado_juego = ESTADO_DIFICULTAD
                         
-                        if menu_existe == False:
-                            accion = obtener_boton_clickeado(botones_menu, pos)
-                            es_dificultad = accion in ['facil', 'medio', 'dificil']
+                        elif accion == 'jugar':
+                            estado_juego = ESTADO_USUARIOS
+                        
+                        elif accion == 'puntajes':
+                            estado_juego = ESTADO_PUNTAJES
+                        
+                        elif accion == 'salir':
+                            ejecutando = False
+                    
+                    # ===== SELECTOR DE DIFICULTAD =====
+                    elif estado_juego == ESTADO_DIFICULTAD:
+                        if accion in ['facil', 'medio', 'dificil']:
+                            dificultad_seleccionada = accion
+                            mensaje_temporal['texto'] = f'Dificultad: {accion.capitalize()}'
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
+                            estado_juego = ESTADO_MENU
+                    
+                    # ===== PANTALLA DE USUARIOS =====
+                    elif estado_juego == ESTADO_USUARIOS:
+                        if accion == 'crear':
+                            estado_juego = ESTADO_CREAR_USUARIO
+                            texto_input = ""
+                            input_activo = True
+                        
+                        elif accion == 'volver':
+                            estado_juego = ESTADO_MENU
+                        
+                        elif accion and accion.startswith('usuario_'):
+                            indice = int(accion.split('_')[1])
+                            usuarios = obtener_usuarios()
+                            usuario_actual = usuarios[indice]
                             
-                            if es_dificultad:
-                                # Iniciar juego con dificultad seleccionada
-                                estado = inicializar_juego(accion)
-                                en_menu = False
-                                reproducir_sonido(efectos_sonido, 'inicio')
+                            # Iniciar juego
+                            estado_sudoku = inicializar_juego(dificultad_seleccionada, usuario_actual)
+                            tiempo_inicio = pygame.time.get_ticks()
+                            estado_juego = ESTADO_JUGANDO
+                            reproducir_sonido(efectos_sonido, 'inicio')
                     
-                    # --- Si estamos jugando ---
-                    else:
-                        # Verificar si se clickeó un botón
-                        accion = obtener_boton_clickeado(botones, pos)
+                    # ===== CREAR USUARIO =====
+                    elif estado_juego == ESTADO_CREAR_USUARIO:
+                        if accion == 'confirmar':
+                            resultado = crear_usuario(texto_input)
+                            
+                            if resultado['exito']:
+                                usuario_actual = texto_input
+                                estado_sudoku = inicializar_juego(dificultad_seleccionada, usuario_actual)
+                                tiempo_inicio = pygame.time.get_ticks()
+                                estado_juego = ESTADO_JUGANDO
+                                reproducir_sonido(efectos_sonido, 'inicio')
+                            else:
+                                mensaje_temporal['texto'] = resultado['mensaje']
+                                mensaje_temporal['tiempo'] = pygame.time.get_ticks()
                         
-                        # Botón "Nuevo Juego" - volver al menú
+                        elif accion == 'cancelar':
+                            estado_juego = ESTADO_USUARIOS
+                            texto_input = ""
+                    
+                    # ===== JUGANDO =====
+                    elif estado_juego == ESTADO_JUGANDO:
                         if accion == 'nuevo':
-                            en_menu = True
-                            mensaje_temporal['texto'] = ''
-                            mensaje_temporal['tiempo'] = 0
+                            # Guardar partida si está incompleta
+                            if estado_sudoku['juego_terminado'] == False:
+                                tiempo_jugado = (pygame.time.get_ticks() - tiempo_inicio) // 1000
+                                guardar_partida(usuario_actual, estado_sudoku['puntaje'], 
+                                              dificultad_seleccionada, tiempo_jugado)
+                            
+                            estado_juego = ESTADO_MENU
+                            estado_sudoku = None
                         
-                        # Botón "Reiniciar" - nuevo tablero misma dificultad
                         elif accion == 'reiniciar':
-                            dificultad_actual = estado['dificultad']
-                            estado = inicializar_juego(dificultad_actual)
+                            estado_sudoku = inicializar_juego(dificultad_seleccionada, usuario_actual)
+                            tiempo_inicio = pygame.time.get_ticks()
+                            reproducir_sonido(efectos_sonido, 'reiniciar')
                             mensaje_temporal['texto'] = 'Nuevo tablero generado'
                             mensaje_temporal['tiempo'] = pygame.time.get_ticks()
-                            reproducir_sonido(efectos_sonido, 'reiniciar')
                         
-                        # Botón "Validar" - verificar solución
                         elif accion == 'validar':
-                            resultado = validar_solucion(estado)
+                            resultado = validar_y_calcular_puntaje(estado_sudoku)
                             reproducir_sonido(efectos_sonido, 'validar')
                             
-                            solucion_correcta = resultado['correcta']
-                            if solucion_correcta:
-                                mensaje_temporal['texto'] = 'Solucion completa!'
-                                mensaje_temporal['tiempo'] = pygame.time.get_ticks()
+                            # Construir mensaje
+                            if resultado['completo']:
+                                mensaje = 'Sudoku completo!'
+                                
+                                # Guardar partida exitosa
+                                tiempo_jugado = (pygame.time.get_ticks() - tiempo_inicio) // 1000
+                                guardar_partida(usuario_actual, resultado['puntaje_final'],
+                                              dificultad_seleccionada, tiempo_jugado)
+                                reproducir_sonido(efectos_sonido, 'victoria')
                             else:
-                                # Construir mensaje con estadísticas
                                 partes = []
+                                if resultado['correctas'] > 0:
+                                    partes.append(f"OK: {resultado['correctas']}")
+                                if resultado['incorrectas'] > 0:
+                                    partes.append(f"Error: {resultado['incorrectas']}")
+                                if resultado['vacias'] > 0:
+                                    partes.append(f"Vacias: {resultado['vacias']}")
                                 
-                                correctas = resultado['total_correctas']
-                                if correctas > 0:
-                                    parte = f"OK: {correctas}"
-                                    partes.append(parte)
-                                
-                                incorrectas = resultado['total_incorrectas']
-                                if incorrectas > 0:
-                                    parte = f"Error: {incorrectas}"
-                                    partes.append(parte)
-                                
-                                vacias = resultado['total_vacias']
-                                if vacias > 0:
-                                    parte = f"Vacias: {vacias}"
-                                    partes.append(parte)
-                                
-                                hay_partes = len(partes) > 0
-                                if hay_partes:
-                                    texto = " | ".join(partes)
+                                if len(partes) > 0:
+                                    mensaje = " | ".join(partes) + f" | Pts: {resultado['puntaje_final']}"
                                 else:
-                                    texto = "Sin numeros"
-                                
-                                mensaje_temporal['texto'] = texto
-                                mensaje_temporal['tiempo'] = pygame.time.get_ticks()
-                        
-                        # No se clickeó botón - verificar si se clickeó celda
-                        else:
-                            celda = obtener_celda_click(pos)
-                            celda_existe = celda is None
+                                    mensaje = "Sin numeros"
                             
-                            if celda_existe == False:
-                                fila = celda[0]
-                                col = celda[1]
-                                seleccionar_celda(estado, fila, col)
-            
-            # ----- Evento: Tecla presionada -----
-            tipo_evento_es_tecla = evento.type == KEYDOWN
-            estamos_jugando = en_menu == False
-            
-            if tipo_evento_es_tecla and estamos_jugando:
-                
-                # Tecla ESC - volver al menú
-                if evento.key == K_ESCAPE:
-                    en_menu = True
-                    mensaje_temporal['texto'] = ''
-                    mensaje_temporal['tiempo'] = 0
-                
-                # Tecla R - reiniciar con misma dificultad
-                elif evento.key == K_r:
-                    dificultad_actual = estado['dificultad']
-                    estado = inicializar_juego(dificultad_actual)
-                    mensaje_temporal['texto'] = 'Nuevo tablero generado'
-                    mensaje_temporal['tiempo'] = pygame.time.get_ticks()
-                    reproducir_sonido(efectos_sonido, 'reiniciar')
-                
-                # Teclas 1-9 - colocar número
-                elif K_1 <= evento.key <= K_9:
-                    numero = evento.key - K_0
-                    resultado = colocar_numero(estado, numero)
-                    
-                    mensaje_temporal['texto'] = resultado['mensaje']
-                    mensaje_temporal['tiempo'] = pygame.time.get_ticks()
-                    
-                    # Reproducir sonido según resultado
-                    tipo = resultado['tipo']
-                    
-                    if tipo == 'correcto':
-                        reproducir_sonido(efectos_sonido, 'correcto')
+                            mensaje_temporal['texto'] = mensaje
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
                         
-                        # Si ganó el juego
-                        juego_terminado = estado['juego_terminado']
-                        if juego_terminado:
-                            reproducir_sonido(efectos_sonido, 'victoria')
+                        else:
+                            # Click en celda del tablero
+                            celda = obtener_celda_click(pos)
+                            if celda:
+                                seleccionar_celda(estado_sudoku, celda[0], celda[1])
                     
-                    elif tipo == 'error':
-                        reproducir_sonido(efectos_sonido, 'error')
+                    # ===== PUNTAJES =====
+                    elif estado_juego == ESTADO_PUNTAJES:
+                        if accion == 'volver':
+                            estado_juego = ESTADO_MENU
+                        
+                        elif accion == 'descargar_txt':
+                            exportar_puntajes_txt()
+                            mensaje_temporal['texto'] = 'Descargado: puntajes.txt'
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
+                        
+                        elif accion == 'descargar_csv':
+                            exportar_puntajes_csv()
+                            mensaje_temporal['texto'] = 'Descargado: puntajes.csv'
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
+            
+            # ----- Evento: Teclas -----
+            elif evento.type == KEYDOWN:
                 
-                # Tecla Backspace o Delete - borrar número
-                elif evento.key == K_BACKSPACE or evento.key == K_DELETE:
-                    se_borro = borrar_numero(estado)
+                # Input de texto (crear usuario)
+                if estado_juego == ESTADO_CREAR_USUARIO and input_activo:
+                    if evento.key == K_RETURN:
+                        # Confirmar creación
+                        resultado = crear_usuario(texto_input)
+                        
+                        if resultado['exito']:
+                            usuario_actual = texto_input
+                            estado_sudoku = inicializar_juego(dificultad_seleccionada, usuario_actual)
+                            tiempo_inicio = pygame.time.get_ticks()
+                            estado_juego = ESTADO_JUGANDO
+                            reproducir_sonido(efectos_sonido, 'inicio')
+                        else:
+                            mensaje_temporal['texto'] = resultado['mensaje']
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
                     
-                    if se_borro:
-                        mensaje_temporal['texto'] = 'Número borrado'
+                    elif evento.key == K_BACKSPACE:
+                        texto_input = texto_input[:-1]
+                    
+                    elif evento.key == K_ESCAPE:
+                        estado_juego = ESTADO_USUARIOS
+                        texto_input = ""
+                    
+                    else:
+                        # Agregar carácter
+                        if len(texto_input) < 20:
+                            texto_input = texto_input + evento.unicode
+                
+                # Teclas durante el juego
+                elif estado_juego == ESTADO_JUGANDO:
+                    if evento.key == K_ESCAPE:
+                        # Guardar partida
+                        if estado_sudoku['juego_terminado'] == False:
+                            tiempo_jugado = (pygame.time.get_ticks() - tiempo_inicio) // 1000
+                            guardar_partida(usuario_actual, estado_sudoku['puntaje'],
+                                          dificultad_seleccionada, tiempo_jugado)
+                        
+                        estado_juego = ESTADO_MENU
+                        estado_sudoku = None
+                    
+                    elif evento.key == K_r:
+                        estado_sudoku = inicializar_juego(dificultad_seleccionada, usuario_actual)
+                        tiempo_inicio = pygame.time.get_ticks()
+                        reproducir_sonido(efectos_sonido, 'reiniciar')
+                    
+                    elif K_1 <= evento.key <= K_9:
+                        numero = evento.key - K_0
+                        resultado = colocar_numero(estado_sudoku, numero)
+                        mensaje_temporal['texto'] = resultado['mensaje']
                         mensaje_temporal['tiempo'] = pygame.time.get_ticks()
+                    
+                    elif evento.key == K_BACKSPACE or evento.key == K_DELETE:
+                        if borrar_numero(estado_sudoku):
+                            mensaje_temporal['texto'] = 'Número borrado'
+                            mensaje_temporal['tiempo'] = pygame.time.get_ticks()
         
         # ===== ACTUALIZACIÓN =====
         pos_mouse = pygame.mouse.get_pos()
+        if len(botones) > 0:
+            actualizar_hover_botones(botones, pos_mouse)
         
         # ===== DIBUJO =====
-        if en_menu:
-            # Dibujar menú de selección de dificultad
-            botones_menu = dibujar_menu_dificultad(pantalla, imagen_fondo)
-            actualizar_hover_botones(botones_menu, pos_mouse)
-        else:
-            # Actualizar hover de botones del juego
-            actualizar_hover_botones(botones, pos_mouse)
+        if estado_juego == ESTADO_MENU:
+            botones = dibujar_menu_principal(pantalla, imagen_fondo)
             
-            # Dibujar interfaz del juego
-            dibujar_interfaz(pantalla, estado, botones, imagen_fondo)
-            
-            # Mostrar mensaje temporal (durante 2 segundos)
-            hay_mensaje = mensaje_temporal['texto'] == ''
-            
-            if hay_mensaje == False:
+            # Mostrar mensaje temporal
+            if mensaje_temporal['texto']:
                 tiempo_actual = pygame.time.get_ticks()
-                tiempo_mensaje = mensaje_temporal['tiempo']
-                diferencia = tiempo_actual - tiempo_mensaje
-                mensaje_visible = diferencia < 2000
-                
-                if mensaje_visible:
+                if tiempo_actual - mensaje_temporal['tiempo'] < 2000:
                     fuente = pygame.font.Font(None, 24)
-                    color_verde = (0, 100, 0)
-                    texto_render = mensaje_temporal['texto']
-                    texto = fuente.render(texto_render, True, color_verde)
-                    posicion = (550, 500)
-                    pantalla.blit(texto, posicion)
+                    texto = fuente.render(mensaje_temporal['texto'], True, (0, 100, 0))
+                    x = ANCHO_VENTANA // 2 - texto.get_width() // 2
+                    pantalla.blit(texto, (x, 550))
+                else:
+                    mensaje_temporal['texto'] = ''
+        
+        elif estado_juego == ESTADO_DIFICULTAD:
+            botones = dibujar_menu_dificultad(pantalla, imagen_fondo)
+        
+        elif estado_juego == ESTADO_USUARIOS:
+            usuarios = obtener_usuarios()
+            botones = dibujar_pantalla_usuarios(pantalla, usuarios, imagen_fondo)
+        
+        elif estado_juego == ESTADO_CREAR_USUARIO:
+            resultado_input = dibujar_input_nombre(pantalla, texto_input, input_activo, imagen_fondo)
+            botones = resultado_input['botones']
+            
+            # Mostrar mensaje temporal
+            if mensaje_temporal['texto']:
+                tiempo_actual = pygame.time.get_ticks()
+                if tiempo_actual - mensaje_temporal['tiempo'] < 3000:
+                    fuente = pygame.font.Font(None, 24)
+                    texto = fuente.render(mensaje_temporal['texto'], True, (200, 0, 0))
+                    x = ANCHO_VENTANA // 2 - texto.get_width() // 2
+                    pantalla.blit(texto, (x, 400))
+                else:
+                    mensaje_temporal['texto'] = ''
+        
+        elif estado_juego == ESTADO_JUGANDO:
+            botones = crear_botones()
+            dibujar_interfaz(pantalla, estado_sudoku, botones, imagen_fondo)
+            
+            # Mostrar mensaje temporal
+            if mensaje_temporal['texto']:
+                tiempo_actual = pygame.time.get_ticks()
+                if tiempo_actual - mensaje_temporal['tiempo'] < 2000:
+                    fuente = pygame.font.Font(None, 22)
+                    texto = fuente.render(mensaje_temporal['texto'], True, (0, 100, 0))
+                    pantalla.blit(texto, (550, 500))
+                else:
+                    mensaje_temporal['texto'] = ''
+        
+        elif estado_juego == ESTADO_PUNTAJES:
+            puntajes = obtener_top_puntajes(5)
+            botones = dibujar_pantalla_puntajes(pantalla, puntajes, imagen_fondo)
+            
+            # Mostrar mensaje temporal
+            if mensaje_temporal['texto']:
+                tiempo_actual = pygame.time.get_ticks()
+                if tiempo_actual - mensaje_temporal['tiempo'] < 2000:
+                    fuente = pygame.font.Font(None, 24)
+                    texto = fuente.render(mensaje_temporal['texto'], True, (0, 100, 0))
+                    x = ANCHO_VENTANA // 2 - texto.get_width() // 2
+                    pantalla.blit(texto, (x, 440))
                 else:
                     mensaje_temporal['texto'] = ''
         

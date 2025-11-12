@@ -12,6 +12,14 @@ ALTO_VENTANA = 600   # Alto de la ventana en píxeles
 TITULO = "Sudoku - UTN Avellaneda"  # Título que aparece en la ventana
 FPS = 30  # Frames por segundo del juego
 
+# ==================== ESTADOS DEL JUEGO ====================
+ESTADO_MENU = 'menu'  # Menú principal
+ESTADO_USUARIOS = 'usuarios'  # Pantalla de selección de usuario
+ESTADO_DIFICULTAD = 'dificultad'  # Selector de dificultad
+ESTADO_JUGANDO = 'jugando'  # Jugando partida
+ESTADO_PUNTAJES = 'puntajes'  # Visualización de puntajes
+ESTADO_CREAR_USUARIO = 'crear_usuario'  # Input para crear usuario
+
 # ==================== CONFIGURACIÓN DEL TABLERO ====================
 TAMANO_TABLERO = 9  # Tamaño del tablero Sudoku (9x9)
 TAMANO_CELDA = 50   # Tamaño de cada celda en píxeles
@@ -83,3 +91,22 @@ PUNTOS_COMPLETAR_TABLERO = 81  # Puntos extra al completar todo el tablero
 ALTO_BOTON = 40  # Alto de los botones en píxeles
 ANCHO_BOTON = 150  # Ancho de los botones en píxeles
 MARGEN_BOTON = 10  # Margen entre botones
+
+# Botones del menú principal
+ALTO_BOTON_MENU = 50
+ANCHO_BOTON_MENU = 200
+
+# ==================== CONFIGURACIÓN DE INPUT DE TEXTO ====================
+ANCHO_INPUT = 300  # Ancho del campo de texto
+ALTO_INPUT = 40  # Alto del campo de texto
+COLOR_INPUT_FONDO = (255, 255, 255)  # Blanco
+COLOR_INPUT_BORDE = (100, 100, 100)  # Gris
+COLOR_INPUT_TEXTO = (0, 0, 0)  # Negro
+COLOR_INPUT_ACTIVO = (100, 150, 200)  # Azul cuando está activo
+
+# ==================== CONFIGURACIÓN DE TABLA DE PUNTAJES ====================
+COLOR_ENCABEZADO_TABLA = (50, 50, 50)  # Gris oscuro
+COLOR_FILA_PAR = (240, 240, 240)  # Gris claro
+COLOR_FILA_IMPAR = (255, 255, 255)  # Blanco
+COLOR_TEXTO_TABLA = (0, 0, 0)  # Negro
+ALTO_FILA_TABLA = 35  # Alto de cada fila

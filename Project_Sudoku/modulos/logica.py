@@ -10,18 +10,19 @@ AUTOR: UTN Avellaneda - Tecnicatura en Programación
 # -------------------- IMPORTS --------------------
 from modulos.datos import generar_sudoku_jugable
 from modulos.validacion import (validar_numero, verificar_zona_completa, 
-                                 verificar_matriz_completa, calcular_puntos_zona)
+                                 verificar_matriz_completa)
 from modulos.configuracion import (PUNTAJE_INICIAL, DESCUENTO_POR_ERROR, 
-                                    PUNTOS_COMPLETAR_TABLERO)
+                                    PUNTOS_COMPLETAR_TABLERO, PUNTOS_ZONA_COMPLETA)
 
 
 # -------------------- FUNCIONES --------------------
-def inicializar_juego(dificultad):
+def inicializar_juego(dificultad, nombre_jugador=""):
     """
     Inicializa un nuevo juego de Sudoku con la dificultad elegida
     
     Parámetros:
         dificultad (str): Nivel ('facil', 'medio', 'dificil')
+        nombre_jugador (str): Nombre del jugador
     
     Operación:
         1. Genera matrices del juego según dificultad
@@ -48,7 +49,9 @@ def inicializar_juego(dificultad):
         'dificultad': dificultad,
         'zonas_completadas': set(),
         'estados_celdas': {},
-        'en_menu': False
+        'en_menu': False,
+        'nombre_jugador': nombre_jugador,
+        'tiempo_inicio': 0  # Se setea cuando empieza a jugar
     }
     
     return estado
@@ -82,7 +85,7 @@ def seleccionar_celda(estado, fila, col):
 
 def colocar_numero(estado, numero):
     """
-    Coloca un número en la celda seleccionada
+    Coloca un número en la celda seleccionada (SIN validar corrección)
     
     Parámetros:
         estado (dict): Estado actual del juego
@@ -91,13 +94,12 @@ def colocar_numero(estado, numero):
     Operación:
         1. Verifica que haya una celda seleccionada
         2. Verifica que la celda no sea fija
-        3. Valida si el número cumple reglas (no duplicado)
-        4. Verifica si coincide con la solución
-        5. Actualiza puntuación y estado de la celda
-        6. Verifica si se completó alguna zona o el juego
+        3. Valida solo si el número es duplicado (reglas de Sudoku)
+        4. Si NO es duplicado, lo coloca (sin verificar si es correcto)
+        5. La validación de corrección se hace SOLO al presionar "Validar"
     
     Retorna:
-        dict: Resultado con 'exito', 'mensaje', 'puntos', 'tipo'
+        dict: Resultado con 'exito', 'mensaje', 'tipo'
     """
     # Verificar que hay celda seleccionada
     hay_celda_seleccionada = estado['celda_seleccionada'] is None
@@ -105,7 +107,6 @@ def colocar_numero(estado, numero):
         resultado = {
             'exito': False,
             'mensaje': 'No hay celda seleccionada',
-            'puntos': 0,
             'tipo': 'normal'
         }
         return resultado
@@ -121,12 +122,11 @@ def colocar_numero(estado, numero):
         resultado = {
             'exito': False,
             'mensaje': 'No se puede modificar número fijo',
-            'puntos': 0,
             'tipo': 'normal'
         }
         return resultado
     
-    # Crear copia temporal para validar
+    # Crear copia temporal para validar duplicados
     matriz_temp = []
     for fila_matriz in estado['matriz_juego']:
         fila_copia = fila_matriz[:]
@@ -134,114 +134,30 @@ def colocar_numero(estado, numero):
     
     matriz_temp[fila][col] = numero
     
-    # Validar si el número cumple las reglas (no duplicado)
+    # Validar SOLO si es duplicado (no verificar corrección)
     numero_es_valido = validar_numero(matriz_temp, fila, col, numero)
     
     if numero_es_valido == False:
-        # Número duplicado - colocarlo temporalmente para mostrar en amarillo
-        estado['matriz_juego'][fila][col] = numero
-        posicion_celda = (fila, col)
-        estado['estados_celdas'][posicion_celda] = 'duplicado'
-        
+        # Número duplicado - no se puede colocar
         resultado = {
             'exito': False,
             'mensaje': 'Número duplicado en fila/columna/región',
-            'puntos': 0,
             'tipo': 'duplicado'
         }
         return resultado
     
-    # Verificar si coincide con la solución
-    numero_solucion = estado['matriz_solucion'][fila][col]
-    numero_es_correcto = numero == numero_solucion
-    
-    if numero_es_correcto == False:
-        # Válido pero incorrecto - descontar puntos
-        estado['matriz_juego'][fila][col] = numero
-        puntaje_nuevo = estado['puntaje'] - DESCUENTO_POR_ERROR
-        
-        if puntaje_nuevo < 0:
-            puntaje_nuevo = 0
-        
-        estado['puntaje'] = puntaje_nuevo
-        estado['errores'] = estado['errores'] + 1
-        
-        posicion_celda = (fila, col)
-        estado['estados_celdas'][posicion_celda] = 'error'
-        
-        resultado = {
-            'exito': False,
-            'mensaje': 'Número incorrecto',
-            'puntos': -DESCUENTO_POR_ERROR,
-            'tipo': 'error'
-        }
-        return resultado
-    
-    # Número correcto - colocarlo
+    # Número válido (no duplicado) - colocarlo SIN verificar corrección
     estado['matriz_juego'][fila][col] = numero
+    
+    # Limpiar estado de colores (se aplicarán al validar)
     posicion_celda = (fila, col)
-    estado['estados_celdas'][posicion_celda] = 'correcto'
-    
-    # Verificar zonas completadas
-    zonas = verificar_zona_completa(estado['matriz_juego'], fila, col)
-    puntos_ganados = 0
-    
-    # Crear identificadores únicos para cada zona
-    id_fila = f"fila_{fila}"
-    id_col = f"col_{col}"
-    numero_region = (fila // 3) * 3 + (col // 3)
-    id_region = f"region_{numero_region}"
-    
-    # Sumar puntos por zonas completadas (solo la primera vez)
-    fila_completa = zonas['fila']
-    fila_ya_contada = id_fila in estado['zonas_completadas']
-    
-    if fila_completa and fila_ya_contada == False:
-        estado['zonas_completadas'].add(id_fila)
-        puntos_ganados = puntos_ganados + 9
-    
-    columna_completa = zonas['columna']
-    columna_ya_contada = id_col in estado['zonas_completadas']
-    
-    if columna_completa and columna_ya_contada == False:
-        estado['zonas_completadas'].add(id_col)
-        puntos_ganados = puntos_ganados + 9
-    
-    region_completa = zonas['region']
-    region_ya_contada = id_region in estado['zonas_completadas']
-    
-    if region_completa and region_ya_contada == False:
-        estado['zonas_completadas'].add(id_region)
-        puntos_ganados = puntos_ganados + 9
-    
-    estado['puntaje'] = estado['puntaje'] + puntos_ganados
-    
-    # Verificar si completó todo el Sudoku
-    tablero_completo = verificar_matriz_completa(estado['matriz_juego'])
-    
-    if tablero_completo:
-        estado['juego_terminado'] = True
-        estado['puntaje'] = estado['puntaje'] + PUNTOS_COMPLETAR_TABLERO
-        puntos_ganados = puntos_ganados + PUNTOS_COMPLETAR_TABLERO
-        
-        resultado = {
-            'exito': True,
-            'mensaje': '¡Felicidades! Completaste el Sudoku',
-            'puntos': puntos_ganados,
-            'tipo': 'correcto'
-        }
-        return resultado
-    
-    # Crear mensaje
-    mensaje = 'Número colocado correctamente'
-    if puntos_ganados > 0:
-        mensaje = mensaje + f' (+{puntos_ganados} pts)'
+    if posicion_celda in estado['estados_celdas']:
+        del estado['estados_celdas'][posicion_celda]
     
     resultado = {
         'exito': True,
-        'mensaje': mensaje,
-        'puntos': puntos_ganados,
-        'tipo': 'correcto'
+        'mensaje': 'Número colocado',
+        'tipo': 'colocado'
     }
     
     return resultado
@@ -309,3 +225,136 @@ def reiniciar_juego(estado):
     nuevo_estado = inicializar_juego(dificultad_actual)
     
     return nuevo_estado
+
+
+def validar_y_calcular_puntaje(estado):
+    """
+    Valida toda la matriz, aplica colores y calcula puntaje
+    
+    Parámetros:
+        estado (dict): Estado actual del juego
+    
+    Operación:
+        1. Compara cada celda con la solución
+        2. Aplica colores (verde=correcto, rojo=incorrecto)
+        3. Calcula descuentos por errores
+        4. Calcula bonificaciones por zonas completas
+        5. Verifica si completó el tablero
+    
+    Retorna:
+        dict: Resultado con puntaje final y estadísticas
+    """
+    # Limpiar estados anteriores
+    estado['estados_celdas'] = {}
+    estado['zonas_completadas'] = set()
+    
+    correctas = 0
+    incorrectas = 0
+    vacias = 0
+    
+    # Validar cada celda
+    for fila in range(9):
+        for col in range(9):
+            celda_es_fija = estado['matriz_fijos'][fila][col]
+            
+            if celda_es_fija == False:
+                valor_jugador = estado['matriz_juego'][fila][col]
+                valor_solucion = estado['matriz_solucion'][fila][col]
+                
+                if valor_jugador == 0:
+                    vacias = vacias + 1
+                else:
+                    numero_es_correcto = valor_jugador == valor_solucion
+                    
+                    if numero_es_correcto:
+                        correctas = correctas + 1
+                        posicion = (fila, col)
+                        estado['estados_celdas'][posicion] = 'correcto'
+                    else:
+                        incorrectas = incorrectas + 1
+                        posicion = (fila, col)
+                        estado['estados_celdas'][posicion] = 'error'
+    
+    # Calcular puntaje
+    puntaje = 0
+    
+    # Descontar por errores
+    descuento = incorrectas * DESCUENTO_POR_ERROR
+    puntaje = puntaje - descuento
+    
+    # Bonificaciones por zonas completas (solo las correctas)
+    for fila in range(9):
+        fila_completa_correcta = True
+        
+        for col in range(9):
+            valor_jugador = estado['matriz_juego'][fila][col]
+            valor_solucion = estado['matriz_solucion'][fila][col]
+            
+            if valor_jugador == 0 or valor_jugador != valor_solucion:
+                fila_completa_correcta = False
+                break
+        
+        if fila_completa_correcta:
+            puntaje = puntaje + PUNTOS_ZONA_COMPLETA
+            id_fila = f"fila_{fila}"
+            estado['zonas_completadas'].add(id_fila)
+    
+    # Verificar columnas completas
+    for col in range(9):
+        columna_completa_correcta = True
+        
+        for fila in range(9):
+            valor_jugador = estado['matriz_juego'][fila][col]
+            valor_solucion = estado['matriz_solucion'][fila][col]
+            
+            if valor_jugador == 0 or valor_jugador != valor_solucion:
+                columna_completa_correcta = False
+                break
+        
+        if columna_completa_correcta:
+            puntaje = puntaje + PUNTOS_ZONA_COMPLETA
+            id_col = f"col_{col}"
+            estado['zonas_completadas'].add(id_col)
+    
+    # Verificar regiones completas
+    for region_fila in range(3):
+        for region_col in range(3):
+            region_completa_correcta = True
+            
+            for f in range(region_fila * 3, region_fila * 3 + 3):
+                for c in range(region_col * 3, region_col * 3 + 3):
+                    valor_jugador = estado['matriz_juego'][f][c]
+                    valor_solucion = estado['matriz_solucion'][f][c]
+                    
+                    if valor_jugador == 0 or valor_jugador != valor_solucion:
+                        region_completa_correcta = False
+                        break
+                
+                if region_completa_correcta == False:
+                    break
+            
+            if region_completa_correcta:
+                puntaje = puntaje + PUNTOS_ZONA_COMPLETA
+                numero_region = region_fila * 3 + region_col
+                id_region = f"region_{numero_region}"
+                estado['zonas_completadas'].add(id_region)
+    
+    # Verificar si completó TODO correctamente
+    tablero_completo = verificar_matriz_completa(estado['matriz_juego'])
+    
+    if tablero_completo:
+        puntaje = puntaje + PUNTOS_COMPLETAR_TABLERO
+        estado['juego_terminado'] = True
+    
+    # Actualizar puntaje en el estado
+    estado['puntaje'] = puntaje
+    
+    resultado = {
+        'puntaje_final': puntaje,
+        'correctas': correctas,
+        'incorrectas': incorrectas,
+        'vacias': vacias,
+        'completo': tablero_completo
+    }
+    
+    return resultado

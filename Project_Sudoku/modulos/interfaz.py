@@ -208,22 +208,31 @@ def dibujar_interfaz(pantalla, estado, botones, imagen_fondo):
     
     # Título
     titulo = fuente_info.render("SUDOKU", True, COLOR_NUMERO_FIJO)
-    posicion = (550, 50)
+    posicion = (550, 30)
     pantalla.blit(titulo, posicion)
+    
+    # Nombre del jugador
+    nombre_jugador = estado.get('nombre_jugador', '')
+    if nombre_jugador:
+        fuente_nombre = pygame.font.Font(None, 24)
+        texto_nombre = f"Jugador: {nombre_jugador}"
+        nombre_render = fuente_nombre.render(texto_nombre, True, COLOR_NUMERO_USUARIO)
+        posicion = (550, 65)
+        pantalla.blit(nombre_render, posicion)
     
     # Nivel
     dificultad = estado['dificultad']
     dificultad_capitalizada = dificultad.capitalize()
     nivel_texto = f"Nivel: {dificultad_capitalizada}"
     nivel = fuente_info.render(nivel_texto, True, COLOR_NUMERO_FIJO)
-    posicion = (550, 90)
+    posicion = (550, 95)
     pantalla.blit(nivel, posicion)
     
     # Puntaje
     puntaje_actual = estado['puntaje']
     puntaje_texto = f"Puntaje: {puntaje_actual}"
     puntaje = fuente_info.render(puntaje_texto, True, COLOR_NUMERO_FIJO)
-    posicion = (550, 130)
+    posicion = (550, 125)
     pantalla.blit(puntaje, posicion)
     
     # Instrucciones
@@ -237,7 +246,7 @@ def dibujar_interfaz(pantalla, estado, botones, imagen_fondo):
         "- ESC: Menu"
     ]
     
-    y_inicial = 200
+    y_inicial = 185
     for i in range(len(instrucciones)):
         linea = instrucciones[i]
         texto = fuente_pequena.render(linea, True, COLOR_NUMERO_FIJO)
@@ -373,6 +382,362 @@ def crear_botones():
             'hover': False
         }
     ]
+    
+    return botones
+
+
+def dibujar_menu_principal(pantalla, imagen_fondo):
+    """
+    Dibuja el menú principal con 4 opciones
+    
+    Parámetros:
+        pantalla: Superficie de Pygame
+        imagen_fondo: Imagen de fondo (puede ser None)
+    
+    Operación:
+        1. Dibuja fondo e imagen
+        2. Dibuja título grande
+        3. Crea 4 botones centrados
+    
+    Retorna:
+        list: Lista de botones del menú
+    """
+    pantalla.fill(COLOR_FONDO)
+    
+    # Imagen de fondo
+    imagen_existe = imagen_fondo is None
+    if imagen_existe == False:
+        posicion = (0, 0)
+        pantalla.blit(imagen_fondo, posicion)
+    
+    # Título
+    fuente_titulo = pygame.font.Font(None, 80)
+    titulo = fuente_titulo.render("SUDOKU", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - titulo.get_width() // 2
+    pantalla.blit(titulo, (x, 80))
+    
+    # Subtítulo
+    fuente_subtitulo = pygame.font.Font(None, 30)
+    subtitulo = fuente_subtitulo.render("UTN Avellaneda", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - subtitulo.get_width() // 2
+    pantalla.blit(subtitulo, (x, 150))
+    
+    # Botones
+    centro_x = ANCHO_VENTANA // 2
+    y_inicial = 220
+    
+    botones = [
+        {
+            'texto': 'NIVEL',
+            'rect': pygame.Rect(centro_x - ANCHO_BOTON_MENU // 2, y_inicial, ANCHO_BOTON_MENU, ALTO_BOTON_MENU),
+            'accion': 'nivel',
+            'hover': False
+        },
+        {
+            'texto': 'JUGAR',
+            'rect': pygame.Rect(centro_x - ANCHO_BOTON_MENU // 2, y_inicial + 70, ANCHO_BOTON_MENU, ALTO_BOTON_MENU),
+            'accion': 'jugar',
+            'hover': False
+        },
+        {
+            'texto': 'VER PUNTAJES',
+            'rect': pygame.Rect(centro_x - ANCHO_BOTON_MENU // 2, y_inicial + 140, ANCHO_BOTON_MENU, ALTO_BOTON_MENU),
+            'accion': 'puntajes',
+            'hover': False
+        },
+        {
+            'texto': 'SALIR',
+            'rect': pygame.Rect(centro_x - ANCHO_BOTON_MENU // 2, y_inicial + 210, ANCHO_BOTON_MENU, ALTO_BOTON_MENU),
+            'accion': 'salir',
+            'hover': False
+        }
+    ]
+    
+    for boton in botones:
+        dibujar_boton(pantalla, boton)
+    
+    return botones
+
+
+def dibujar_pantalla_usuarios(pantalla, usuarios, imagen_fondo):
+    """
+    Dibuja pantalla para crear o seleccionar usuario
+    
+    Parámetros:
+        pantalla: Superficie de Pygame
+        usuarios (list): Lista de nombres de usuarios
+        imagen_fondo: Imagen de fondo
+    
+    Retorna:
+        list: Lista de botones
+    """
+    pantalla.fill(COLOR_FONDO)
+    
+    # Imagen de fondo
+    if imagen_fondo:
+        pantalla.blit(imagen_fondo, (0, 0))
+    
+    # Título
+    fuente_titulo = pygame.font.Font(None, 50)
+    titulo = fuente_titulo.render("Selecciona tu jugador", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - titulo.get_width() // 2
+    pantalla.blit(titulo, (x, 50))
+    
+    # Botón crear nuevo usuario
+    centro_x = ANCHO_VENTANA // 2
+    boton_crear = {
+        'texto': 'CREAR NUEVO USUARIO',
+        'rect': pygame.Rect(centro_x - 150, 130, 300, 50),
+        'accion': 'crear',
+        'hover': False,
+        'color': COLOR_BOTON_FACIL,
+        'color_hover': COLOR_BOTON_FACIL_HOVER
+    }
+    
+    botones = [boton_crear]
+    
+    # Lista de usuarios existentes
+    fuente_subtitulo = pygame.font.Font(None, 30)
+    subtitulo = fuente_subtitulo.render("Jugadores existentes:", True, COLOR_NUMERO_FIJO)
+    pantalla.blit(subtitulo, (150, 210))
+    
+    y_usuarios = 250
+    for i in range(len(usuarios)):
+        nombre = usuarios[i]
+        boton_usuario = {
+            'texto': nombre,
+            'rect': pygame.Rect(150, y_usuarios, 300, 40),
+            'accion': f'usuario_{i}',
+            'hover': False
+        }
+        botones.append(boton_usuario)
+        y_usuarios = y_usuarios + 50
+    
+    # Mensaje si no hay usuarios
+    hay_usuarios = len(usuarios) == 0
+    if hay_usuarios:
+        fuente_msg = pygame.font.Font(None, 25)
+        mensaje = fuente_msg.render("No hay jugadores registrados", True, (150, 150, 150))
+        pantalla.blit(mensaje, (150, 250))
+    
+    # Botón volver
+    boton_volver = {
+        'texto': 'VOLVER',
+        'rect': pygame.Rect(centro_x - 75, 520, 150, 40),
+        'accion': 'volver',
+        'hover': False
+    }
+    botones.append(boton_volver)
+    
+    # Dibujar todos los botones
+    for boton in botones:
+        dibujar_boton(pantalla, boton)
+    
+    return botones
+
+
+def dibujar_input_nombre(pantalla, texto_actual, activo, imagen_fondo):
+    """
+    Dibuja pantalla para ingresar nombre de usuario
+    
+    Parámetros:
+        pantalla: Superficie de Pygame
+        texto_actual (str): Texto que el usuario va escribiendo
+        activo (bool): Si el input está activo
+        imagen_fondo: Imagen de fondo
+    
+    Retorna:
+        dict: Rectángulo del input y botones
+    """
+    pantalla.fill(COLOR_FONDO)
+    
+    # Imagen de fondo
+    if imagen_fondo:
+        pantalla.blit(imagen_fondo, (0, 0))
+    
+    # Título
+    fuente_titulo = pygame.font.Font(None, 50)
+    titulo = fuente_titulo.render("Crear Nuevo Jugador", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - titulo.get_width() // 2
+    pantalla.blit(titulo, (x, 100))
+    
+    # Instrucciones
+    fuente_inst = pygame.font.Font(None, 25)
+    instruccion = fuente_inst.render("Ingresa tu nombre (nick):", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - instruccion.get_width() // 2
+    pantalla.blit(instruccion, (x, 180))
+    
+    # Campo de texto
+    centro_x = ANCHO_VENTANA // 2
+    rect_input = pygame.Rect(centro_x - ANCHO_INPUT // 2, 230, ANCHO_INPUT, ALTO_INPUT)
+    
+    # Color del borde según si está activo
+    if activo:
+        color_borde = COLOR_INPUT_ACTIVO
+    else:
+        color_borde = COLOR_INPUT_BORDE
+    
+    # Dibujar input
+    pygame.draw.rect(pantalla, COLOR_INPUT_FONDO, rect_input)
+    pygame.draw.rect(pantalla, color_borde, rect_input, 3)
+    
+    # Dibujar texto
+    fuente_input = pygame.font.Font(None, 30)
+    texto_render = fuente_input.render(texto_actual, True, COLOR_INPUT_TEXTO)
+    pantalla.blit(texto_render, (rect_input.x + 10, rect_input.y + 8))
+    
+    # Cursor parpadeante
+    tiempo_actual = pygame.time.get_ticks()
+    mostrar_cursor = (tiempo_actual // 500) % 2 == 0
+    
+    if activo and mostrar_cursor:
+        ancho_texto = texto_render.get_width()
+        x_cursor = rect_input.x + 10 + ancho_texto + 2
+        y_cursor = rect_input.y + 8
+        pygame.draw.line(pantalla, COLOR_INPUT_TEXTO, (x_cursor, y_cursor), (x_cursor, y_cursor + 25), 2)
+    
+    # Botones
+    botones = [
+        {
+            'texto': 'CREAR',
+            'rect': pygame.Rect(centro_x - 170, 320, 150, 50),
+            'accion': 'confirmar',
+            'hover': False,
+            'color': COLOR_BOTON_FACIL,
+            'color_hover': COLOR_BOTON_FACIL_HOVER
+        },
+        {
+            'texto': 'CANCELAR',
+            'rect': pygame.Rect(centro_x + 20, 320, 150, 50),
+            'accion': 'cancelar',
+            'hover': False
+        }
+    ]
+    
+    for boton in botones:
+        dibujar_boton(pantalla, boton)
+    
+    resultado = {
+        'rect_input': rect_input,
+        'botones': botones
+    }
+    
+    return resultado
+
+
+def dibujar_pantalla_puntajes(pantalla, puntajes, imagen_fondo):
+    """
+    Dibuja la pantalla con Top 5 puntajes en formato tabla
+    
+    Parámetros:
+        pantalla: Superficie de Pygame
+        puntajes (list): Lista de diccionarios con puntajes
+        imagen_fondo: Imagen de fondo
+    
+    Retorna:
+        list: Botones de la pantalla
+    """
+    pantalla.fill(COLOR_FONDO)
+    
+    # Imagen de fondo
+    if imagen_fondo:
+        pantalla.blit(imagen_fondo, (0, 0))
+    
+    # Título
+    fuente_titulo = pygame.font.Font(None, 60)
+    titulo = fuente_titulo.render("🏆 MEJORES PUNTAJES 🏆", True, COLOR_NUMERO_FIJO)
+    x = ANCHO_VENTANA // 2 - titulo.get_width() // 2
+    pantalla.blit(titulo, (x, 40))
+    
+    # Tabla
+    x_tabla = 100
+    y_tabla = 120
+    ancho_tabla = 600
+    
+    # Encabezado
+    fuente_encabezado = pygame.font.Font(None, 28)
+    rect_encabezado = pygame.Rect(x_tabla, y_tabla, ancho_tabla, ALTO_FILA_TABLA)
+    pygame.draw.rect(pantalla, COLOR_ENCABEZADO_TABLA, rect_encabezado)
+    
+    # Textos del encabezado
+    pygame.draw.line(pantalla, COLOR_NUMERO_FIJO, 
+                    (x_tabla, y_tabla + ALTO_FILA_TABLA), 
+                    (x_tabla + ancho_tabla, y_tabla + ALTO_FILA_TABLA), 2)
+    
+    encabezados = ["POS", "NOMBRE", "PUNTAJE", "DIFICULTAD", "FECHA"]
+    posiciones_x = [x_tabla + 20, x_tabla + 100, x_tabla + 250, x_tabla + 350, x_tabla + 480]
+    
+    for i in range(len(encabezados)):
+        texto = fuente_encabezado.render(encabezados[i], True, (255, 255, 255))
+        pantalla.blit(texto, (posiciones_x[i], y_tabla + 7))
+    
+    # Filas de datos
+    fuente_datos = pygame.font.Font(None, 24)
+    y_actual = y_tabla + ALTO_FILA_TABLA
+    
+    cantidad_mostrar = min(5, len(puntajes))
+    
+    for i in range(cantidad_mostrar):
+        partida = puntajes[i]
+        
+        # Color de fondo alternado
+        es_par = i % 2 == 0
+        if es_par:
+            color_fondo = COLOR_FILA_PAR
+        else:
+            color_fondo = COLOR_FILA_IMPAR
+        
+        rect_fila = pygame.Rect(x_tabla, y_actual, ancho_tabla, ALTO_FILA_TABLA)
+        pygame.draw.rect(pantalla, color_fondo, rect_fila)
+        pygame.draw.rect(pantalla, COLOR_NUMERO_FIJO, rect_fila, 1)
+        
+        # Datos
+        posicion = str(i + 1)
+        nombre = partida['nombre']
+        puntaje = str(partida['puntaje'])
+        dificultad = partida['dificultad'].capitalize()
+        fecha = partida['fecha'].split()[0]  # Solo la fecha, sin hora
+        
+        datos = [posicion, nombre, puntaje, dificultad, fecha]
+        
+        for j in range(len(datos)):
+            texto = fuente_datos.render(datos[j], True, COLOR_TEXTO_TABLA)
+            pantalla.blit(texto, (posiciones_x[j], y_actual + 8))
+        
+        y_actual = y_actual + ALTO_FILA_TABLA
+    
+    # Mensaje si no hay puntajes
+    if cantidad_mostrar == 0:
+        fuente_msg = pygame.font.Font(None, 30)
+        mensaje = fuente_msg.render("No hay puntajes registrados", True, COLOR_NUMERO_FIJO)
+        x = ANCHO_VENTANA // 2 - mensaje.get_width() // 2
+        pantalla.blit(mensaje, (x, y_tabla + 100))
+    
+    # Botones
+    centro_x = ANCHO_VENTANA // 2
+    botones = [
+        {
+            'texto': 'Descargar TXT',
+            'rect': pygame.Rect(150, 480, 150, 40),
+            'accion': 'descargar_txt',
+            'hover': False
+        },
+        {
+            'texto': 'Descargar CSV',
+            'rect': pygame.Rect(320, 480, 150, 40),
+            'accion': 'descargar_csv',
+            'hover': False
+        },
+        {
+            'texto': 'VOLVER',
+            'rect': pygame.Rect(500, 480, 150, 40),
+            'accion': 'volver',
+            'hover': False
+        }
+    ]
+    
+    for boton in botones:
+        dibujar_boton(pantalla, boton)
     
     return botones
 

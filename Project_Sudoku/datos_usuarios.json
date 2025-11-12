@@ -1,0 +1,66 @@
+{
+    "usuarios": [
+        {
+            "nombre": "Pablo",
+            "fecha_creacion": "2025-11-12 18:20:29",
+            "partidas_jugadas": 2,
+            "mejor_puntaje": 0
+        },
+        {
+            "nombre": "Daniel",
+            "fecha_creacion": "2025-11-12 18:20:41",
+            "partidas_jugadas": 1,
+            "mejor_puntaje": 0
+        },
+        {
+            "nombre": "Coria",
+            "fecha_creacion": "2025-11-12 18:20:50",
+            "partidas_jugadas": 3,
+            "mejor_puntaje": 0
+        }
+    ],
+    "partidas": [
+        {
+            "nombre": "Pablo",
+            "puntaje": 0,
+            "dificultad": "dificil",
+            "fecha": "2025-11-12 18:20:33",
+            "tiempo_segundos": 4
+        },
+        {
+            "nombre": "Pablo",
+            "puntaje": 0,
+            "dificultad": "dificil",
+            "fecha": "2025-11-12 18:20:36",
+            "tiempo_segundos": 0
+        },
+        {
+            "nombre": "Daniel",
+            "puntaje": 0,
+            "dificultad": "dificil",
+            "fecha": "2025-11-12 18:20:44",
+            "tiempo_segundos": 0
+        },
+        {
+            "nombre": "Coria",
+            "puntaje": 0,
+            "dificultad": "dificil",
+            "fecha": "2025-11-12 18:21:23",
+            "tiempo_segundos": 33
+        },
+        {
+            "nombre": "Coria",
+            "puntaje": 0,
+            "dificultad": "facil",
+            "fecha": "2025-11-12 18:21:53",
+            "tiempo_segundos": 0
+        },
+        {
+            "nombre": "Coria",
+            "puntaje": 0,
+            "dificultad": "facil",
+            "fecha": "2025-11-12 18:22:28",
+            "tiempo_segundos": 32
+        }
+    ]
+}
