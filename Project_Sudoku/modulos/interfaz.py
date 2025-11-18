@@ -246,7 +246,7 @@ def dibujar_interfaz(pantalla, estado, botones, imagen_fondo):
         "- ESC: Menu"
     ]
     
-    y_inicial = 185
+    y_inicial = 200
     for i in range(len(instrucciones)):
         linea = instrucciones[i]
         texto = fuente_pequena.render(linea, True, COLOR_NUMERO_FIJO)

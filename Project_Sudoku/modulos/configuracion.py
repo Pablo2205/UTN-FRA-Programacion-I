@@ -38,6 +38,7 @@ RUTA_SONIDO_VALIDAR = "assets/sonidos/validar.wav"
 RUTA_SONIDO_CORRECTO = "assets/sonidos/correcto.wav"
 RUTA_SONIDO_ERROR = "assets/sonidos/error.wav"
 RUTA_SONIDO_VICTORIA = "assets/sonidos/victoria.wav"
+RUTA_SONIDO_CLICK = "assets/sonidos/click.wav"
 
 # ==================== CONFIGURACIÓN DE AUDIO ====================
 VOLUMEN_MUSICA = 0.3   # Volumen de la música de fondo (0.0 a 1.0)

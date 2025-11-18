@@ -80,15 +80,19 @@ def main():
                     # ===== MENÚ PRINCIPAL =====
                     if estado_juego == ESTADO_MENU:
                         if accion == 'nivel':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_DIFICULTAD
                         
                         elif accion == 'jugar':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_USUARIOS
                         
                         elif accion == 'puntajes':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_PUNTAJES
                         
                         elif accion == 'salir':
+                            reproducir_sonido(efectos_sonido, 'click')
                             ejecutando = False
                     
                     # ===== SELECTOR DE DIFICULTAD =====
@@ -102,15 +106,18 @@ def main():
                     # ===== PANTALLA DE USUARIOS =====
                     elif estado_juego == ESTADO_USUARIOS:
                         if accion == 'crear':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_CREAR_USUARIO
                             texto_input = ""
                             input_activo = True
                         
                         elif accion == 'volver':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_MENU
                         
                         elif accion and accion.startswith('usuario_'):
                             indice = int(accion.split('_')[1])
+                            reproducir_sonido(efectos_sonido, 'click')
                             usuarios = obtener_usuarios()
                             usuario_actual = usuarios[indice]
                             
@@ -123,6 +130,7 @@ def main():
                     # ===== CREAR USUARIO =====
                     elif estado_juego == ESTADO_CREAR_USUARIO:
                         if accion == 'confirmar':
+                            reproducir_sonido(efectos_sonido, 'click')
                             resultado = crear_usuario(texto_input)
                             
                             if resultado['exito']:
@@ -136,6 +144,7 @@ def main():
                                 mensaje_temporal['tiempo'] = pygame.time.get_ticks()
                         
                         elif accion == 'cancelar':
+                            reproducir_sonido(efectos_sonido, 'click')
                             estado_juego = ESTADO_USUARIOS
                             texto_input = ""
                     
@@ -200,11 +209,13 @@ def main():
                             estado_juego = ESTADO_MENU
                         
                         elif accion == 'descargar_txt':
+                            reproducir_sonido(efectos_sonido, 'click')
                             exportar_puntajes_txt()
                             mensaje_temporal['texto'] = 'Descargado: puntajes.txt'
                             mensaje_temporal['tiempo'] = pygame.time.get_ticks()
                         
                         elif accion == 'descargar_csv':
+                            reproducir_sonido(efectos_sonido, 'click')
                             exportar_puntajes_csv()
                             mensaje_temporal['texto'] = 'Descargado: puntajes.csv'
                             mensaje_temporal['tiempo'] = pygame.time.get_ticks()
@@ -216,6 +227,7 @@ def main():
                 if estado_juego == ESTADO_CREAR_USUARIO and input_activo:
                     if evento.key == K_RETURN:
                         # Confirmar creación
+                        reproducir_sonido(efectos_sonido, 'click')
                         resultado = crear_usuario(texto_input)
                         
                         if resultado['exito']:

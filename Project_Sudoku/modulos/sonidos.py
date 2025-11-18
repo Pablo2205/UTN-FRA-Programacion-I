@@ -92,7 +92,8 @@ def cargar_efectos_sonido():
         'validar': None,
         'correcto': None,
         'error': None,
-        'victoria': None
+        'victoria': None,
+        'click': None
     }
     
     rutas = {
@@ -101,7 +102,8 @@ def cargar_efectos_sonido():
         'validar': RUTA_SONIDO_VALIDAR,
         'correcto': RUTA_SONIDO_CORRECTO,
         'error': RUTA_SONIDO_ERROR,
-        'victoria': RUTA_SONIDO_VICTORIA
+        'victoria': RUTA_SONIDO_VICTORIA,
+        'click': RUTA_SONIDO_CLICK
     }
     
     # Cargar cada efecto de sonido
