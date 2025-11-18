@@ -1,0 +1,11 @@
+assets/sonidos/musica_fondo.mp3
+datos_usuarios.json
+puntajes.txt
+puntajes.csv
+
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
